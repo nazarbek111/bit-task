@@ -1,70 +1,29 @@
-# Getting Started with Create React App
+# BitTask – Task Manager (Bitrix-style)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Project Description
 
-## Available Scripts
+BitTask is a Task Manager web application inspired by Bitrix24 task workflow. The goal of this project is to help students and junior professionals organize their tasks in a structured and simple interface. The application will gradually evolve throughout the semester by adding task management, status control, filtering, and persistence.
 
-In the project directory, you can run:
+The target audience includes students and individuals who need a lightweight tool for organizing personal or academic tasks. The application solves the problem of scattered task tracking by providing one centralized and clean workspace.
 
-### `npm start`
+### MVP (Initial Stage)
+- Project structure (components/pages/assets)
+- 3 functional components (Header, MainContent, Footer)
+- Basic SPA layout
+- Clean UI styling
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## SPA Theory Answers
 
-### `npm test`
+### What is a Single Page Application (SPA)?
+A Single Page Application is a web application that loads a single HTML page and dynamically updates content without reloading the entire page. Navigation happens inside the browser using JavaScript. This provides a smoother and faster user experience compared to traditional page reloads.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### How does SPA differ from traditional Multi-Page Applications (MPA)?
+In a Multi-Page Application, each navigation request loads a completely new HTML page from the server. In contrast, an SPA loads once and updates only necessary parts of the page dynamically. SPAs rely heavily on client-side rendering and APIs, while MPAs rely more on server-side rendering.
 
-### `npm run build`
+### What is the Virtual DOM?
+The Virtual DOM is a lightweight copy of the real DOM stored in memory. When a change occurs, React updates the Virtual DOM first, compares it with the previous version, and then applies only the necessary updates to the real DOM. This improves performance by reducing expensive direct DOM manipulations.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Why does React use a component-based architecture?
+React uses a component-based architecture to divide the user interface into reusable and independent pieces. This makes applications easier to maintain, scale, and test. Components improve code organization and allow developers to build complex UIs by combining smaller parts.
