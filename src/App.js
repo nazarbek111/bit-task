@@ -1,6 +1,5 @@
-import Home from "./pages/Home";
-import "./styles.css";
+import JSXLab from "./pages/JSXLab";
 
 export default function App() {
-  return <Home />;
+  return <JSXLab />;
 }
