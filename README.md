@@ -27,3 +27,41 @@ The Virtual DOM is a lightweight copy of the real DOM stored in memory. When a c
 
 ### Why does React use a component-based architecture?
 React uses a component-based architecture to divide the user interface into reusable and independent pieces. This makes applications easier to maintain, scale, and test. Components improve code organization and allow developers to build complex UIs by combining smaller parts.
+
+
+
+
+
+
+
+### JSX Lab – Explanation
+
+What is JSX?
+
+JSX (JavaScript XML) is a syntax extension for JavaScript used in React. It allows developers to write HTML-like code inside JavaScript. JSX makes UI structure more readable and easier to understand. React later transforms JSX into regular JavaScript using Babel. It helps combine UI and logic in one place.
+
+⸻
+
+### Three Rules of JSX
+	1.	JSX must return a single root element.
+This means all elements must be wrapped inside one parent element, such as a <div> or a React Fragment <> </>.
+	2.	All tags must be properly closed.
+For example, <img /> must be self-closing, and <p></p> must have both opening and closing tags.
+	3.	Use className instead of class.
+Since class is a reserved keyword in JavaScript, React uses className for CSS classes.
+
+⸻
+
+### Example of Embedded Expression
+
+JSX allows embedding JavaScript expressions inside curly braces {}.
+
+Example from my project:
+<h2>Hello, {name}!</h2>
+<p>5 + 5 = {5 + 5}</p>
+<p>Status: {age >= 18 ? "Adult" : "Minor"}</p>
+
+Here:
+	•	{name} displays a variable
+	•	{5 + 5} performs a mathematical operation
+	•	{age >= 18 ? "Adult" : "Minor"} uses a conditional expression
