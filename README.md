@@ -36,32 +36,71 @@ React uses a component-based architecture to divide the user interface into reus
 
 ### JSX Lab – Explanation
 
-What is JSX?
+In my BitTask project, JSX is used to build the interface of the task manager. JSX allows me to write UI structure directly inside JavaScript components. Instead of separating HTML and JS, I combine them in one place using React functional components.
 
-JSX (JavaScript XML) is a syntax extension for JavaScript used in React. It allows developers to write HTML-like code inside JavaScript. JSX makes UI structure more readable and easier to understand. React later transforms JSX into regular JavaScript using Babel. It helps combine UI and logic in one place.
+In this project, JSX is used to:
+	•	Render task cards
+	•	Display dynamic task data
+	•	Show conditional statuses (Done / In Progress)
+	•	Render lists of tasks using .map()
+	•	Handle user interaction with onClick
+
+React converts this JSX into regular JavaScript before rendering it in the browser.
+⸻
+
+### Three JSX Rules Used in My Project
+1. Single Root Element
+Each component in my project returns one root element.
+For example, the Home component returns: <div className="app">
+All content is wrapped inside this container.
+
+2. All Tags Must Be Closed
+Every tag in my project is properly closed: <img src="..." alt="..." /> and <p></p>. React requires strict syntax.
+
+3. className Instead of class
+Since class is reserved in JavaScript, I use className: <div className="taskCard">
+This is used throughout the project for styling.
 
 ⸻
 
-### Three Rules of JSX
-	1.	JSX must return a single root element.
-This means all elements must be wrapped inside one parent element, such as a <div> or a React Fragment <> </>.
-	2.	All tags must be properly closed.
-For example, <img /> must be self-closing, and <p></p> must have both opening and closing tags.
-	3.	Use className instead of class.
-Since class is a reserved keyword in JavaScript, React uses className for CSS classes.
+### Embedded Expressions in My Project
 
-⸻
+JSX allows embedding JavaScript expressions using {}.
+In my BitTask project I use expressions to render dynamic data.
 
-### Example of Embedded Expression
-
-JSX allows embedding JavaScript expressions inside curly braces {}.
-
-Example from my project:
-<h2>Hello, {name}!</h2>
-<p>5 + 5 = {5 + 5}</p>
-<p>Status: {age >= 18 ? "Adult" : "Minor"}</p>
+Example:
+<span className="pill">Total tasks: {tasks.length}</span>
+<span className="pill">Done: {doneCount}</span>
 
 Here:
-	•	{name} displays a variable
-	•	{5 + 5} performs a mathematical operation
-	•	{age >= 18 ? "Adult" : "Minor"} uses a conditional expression
+	•	{tasks.length} dynamically shows total number of tasks
+	•	{doneCount} counts completed tasks
+
+### Conditional Rendering in My Project
+I use a ternary operator to display task status: {completed ? "Done" : "In Progress"}
+I also use logical &&: {showTip && <p>Tip: Next week I will implement CRUD operations.</p>}
+
+### List Rendering
+Tasks are rendered dynamically using .map(): 
+{tasks.map((task) => (
+  <TaskCard key={task.id} ... />
+))}
+The key is required so React can efficiently update the DOM.
+
+### Props Usage
+I created reusable components:
+	•	Greeting
+	•	TaskCard
+
+Example: <Greeting name={userName} />
+Props allow passing data between components.
+
+
+### Bonus: useState and onClick
+I implemented state management using useState: const [showTip, setShowTip] = useState(false);
+And an event handler: <button onClick={() => setShowTip(!showTip)}>
+This allows dynamic UI updates without page reload.
+
+### Conclusion
+
+All JSX lab requirements were directly integrated into the BitTask semester project. Instead of creating a separate demo page, I implemented JSX concepts inside the real task manager structure.
