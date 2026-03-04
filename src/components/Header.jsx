@@ -1,10 +1,13 @@
 export default function Header() {
   return (
     <header className="header">
-      <h1 className="logo">BitTask</h1>
+      <div>
+        <h1 className="logo">BitTask</h1>
+        <p className="headerSub">Task flow for student sprint work</p>
+      </div>
       <nav className="nav">
-        <a href="#home">Home</a>
-        <a href="#about">About</a>
+        <a href="/">Dashboard</a>
+        <a href="/#board">Tasks</a>
       </nav>
     </header>
   );
