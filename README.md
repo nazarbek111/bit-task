@@ -1,106 +1,121 @@
-# BitTask – Task Manager (Bitrix-style)
+BitTask
 
-## Project Description
+Project Overview
 
-BitTask is a Task Manager web application inspired by Bitrix24 task workflow. The goal of this project is to help students and junior professionals organize their tasks in a structured and simple interface. The application will gradually evolve throughout the semester by adding task management, status control, filtering, and persistence.
+BitTask is a React-based task manager made as my semester project for Front-End Development. The idea of the project is to create a simple and useful workspace where a user can add tasks, track progress, filter tasks, search by title, and manage daily work more comfortably.
 
-The target audience includes students and individuals who need a lightweight tool for organizing personal or academic tasks. The application solves the problem of scattered task tracking by providing one centralized and clean workspace.
-
-### MVP (Initial Stage)
-- Project structure (components/pages/assets)
-- 3 functional components (Header, MainContent, Footer)
-- Basic SPA layout
-- Clean UI styling
-
----
-
-## SPA Theory Answers
-
-### What is a Single Page Application (SPA)?
-A Single Page Application is a web application that loads a single HTML page and dynamically updates content without reloading the entire page. Navigation happens inside the browser using JavaScript. This provides a smoother and faster user experience compared to traditional page reloads.
-
-### How does SPA differ from traditional Multi-Page Applications (MPA)?
-In a Multi-Page Application, each navigation request loads a completely new HTML page from the server. In contrast, an SPA loads once and updates only necessary parts of the page dynamically. SPAs rely heavily on client-side rendering and APIs, while MPAs rely more on server-side rendering.
-
-### What is the Virtual DOM?
-The Virtual DOM is a lightweight copy of the real DOM stored in memory. When a change occurs, React updates the Virtual DOM first, compares it with the previous version, and then applies only the necessary updates to the real DOM. This improves performance by reducing expensive direct DOM manipulations.
-
-### Why does React use a component-based architecture?
-React uses a component-based architecture to divide the user interface into reusable and independent pieces. This makes applications easier to maintain, scale, and test. Components improve code organization and allow developers to build complex UIs by combining smaller parts.
-
-
-
-
-
-
-
-### JSX Lab – Explanation
-
-In my BitTask project, JSX is used to build the interface of the task manager. JSX allows me to write UI structure directly inside JavaScript components. Instead of separating HTML and JS, I combine them in one place using React functional components.
-
-In this project, JSX is used to:
-	•	Render task cards
-	•	Display dynamic task data
-	•	Show conditional statuses (Done / In Progress)
-	•	Render lists of tasks using .map()
-	•	Handle user interaction with onClick
-
-React converts this JSX into regular JavaScript before rendering it in the browser.
-⸻
-
-### Three JSX Rules Used in My Project
-1. Single Root Element
-Each component in my project returns one root element.
-For example, the Home component returns: <div className="app">
-All content is wrapped inside this container.
-
-2. All Tags Must Be Closed
-Every tag in my project is properly closed: <img src="..." alt="..." /> and <p></p>. React requires strict syntax.
-
-3. className Instead of class
-Since class is reserved in JavaScript, I use className: <div className="taskCard">
-This is used throughout the project for styling.
+I decided to continue the same project from previous assignments and improve it step by step instead of creating something new every time. Because of that, BitTask now includes reusable React components, state management, event handling, form validation, dynamic rendering, and local storage support.
 
 ⸻
 
-### Embedded Expressions in My Project
+Main Features
+	•	Add a new task
+	•	Delete a task
+	•	Change task status (done / in progress)
+	•	Search tasks by title
+	•	Filter tasks by status
+	•	Sort tasks
+	•	Show task statistics
+	•	Save tasks in localStorage
+	•	Responsive and clean UI
 
-JSX allows embedding JavaScript expressions using {}.
-In my BitTask project I use expressions to render dynamic data.
+⸻
 
-Example:
-<span className="pill">Total tasks: {tasks.length}</span>
-<span className="pill">Done: {doneCount}</span>
+Technologies Used
+	•	React
+	•	JavaScript
+	•	JSX
+	•	CSS
+	•	localStorage
 
-Here:
-	•	{tasks.length} dynamically shows total number of tasks
-	•	{doneCount} counts completed tasks
+⸻
 
-### Conditional Rendering in My Project
-I use a ternary operator to display task status: {completed ? "Done" : "In Progress"}
-I also use logical &&: {showTip && <p>Tip: Next week I will implement CRUD operations.</p>}
+Project Structure
 
-### List Rendering
-Tasks are rendered dynamically using .map(): 
-{tasks.map((task) => (
-  <TaskCard key={task.id} ... />
-))}
-The key is required so React can efficiently update the DOM.
+The project is divided into reusable components to keep the code clean and easier to manage.
 
-### Props Usage
-I created reusable components:
-	•	Greeting
-	•	TaskCard
+Main components:
+	•	Header
+	•	Footer
+	•	TaskForm
+	•	SearchBar
+	•	TaskFilters
+	•	TaskStats
+	•	TaskList
+	•	TaskItem
 
-Example: <Greeting name={userName} />
-Props allow passing data between components.
+Main page:
+	•	Home.jsx
 
+⸻
 
-### Bonus: useState and onClick
-I implemented state management using useState: const [showTip, setShowTip] = useState(false);
-And an event handler: <button onClick={() => setShowTip(!showTip)}>
-This allows dynamic UI updates without page reload.
+JavaScript Concepts Used
 
-### Conclusion
+This project demonstrates the main JavaScript and React topics covered in class:
+	•	variables and data types
+	•	arrays and objects
+	•	conditional logic
+	•	functions and arrow functions
+	•	map()
+	•	filter()
+	•	reduce()
+	•	destructuring
+	•	spread operator
+	•	callbacks
+	•	import/export
+	•	React state with useState
+	•	React optimization with useMemo
+	•	side effects with useEffect
 
-All JSX lab requirements were directly integrated into the BitTask semester project. Instead of creating a separate demo page, I implemented JSX concepts inside the real task manager structure.
+⸻
+
+Form Handling
+
+The application contains a working task form with controlled inputs.
+
+Form fields:
+	•	task title
+	•	priority
+	•	assignee
+
+Validation:
+	•	empty fields cannot be submitted
+
+⸻
+
+Dynamic Rendering
+
+The task list is rendered dynamically using map().
+The app also uses:
+	•	filtering by task status
+	•	searching by keyword
+	•	conditional rendering for empty results
+	•	dynamic statistics based on current task data
+
+⸻
+
+State and Events
+
+The app uses React state and event handling to make the interface interactive.
+
+Examples:
+	•	onSubmit — adding a new task
+	•	onChange — updating search and form values
+	•	onClick — toggling task status, deleting tasks, changing filters
+
+⸻
+
+Data Persistence
+
+Tasks are stored in localStorage, so after refreshing the page the saved data is still available.
+
+-----
+Why I Made This Project
+
+I chose a task manager because it is practical and easy to expand step by step. It also fits well with React because I can clearly demonstrate components, props, state, events, forms, and dynamic rendering in one project.
+
+⸻
+
+Current Result
+
+At this stage, BitTask is already a working React SPA with task management features and a clear component structure. Compared to the first assignments, the project now has much more logic, interactivity, and better usability.

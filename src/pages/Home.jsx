@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import TaskForm from "../components/TaskForm";
@@ -7,42 +7,107 @@ import TaskFilters from "../components/TaskFilters";
 import TaskStats from "../components/TaskStats";
 import TaskList from "../components/TaskList";
 
+const storageKey = "bittask.tasks";
+
 const initialTasks = [
-  { id: 1, title: "Create React project", priority: "High", completed: true },
-  { id: 2, title: "Split UI into components", priority: "High", completed: true },
-  { id: 3, title: "Add events and state", priority: "Normal", completed: false },
+  {
+    id: 1,
+    title: "Create React project",
+    priority: "High",
+    assignee: "Nazarbek",
+    completed: true,
+  },
+  {
+    id: 2,
+    title: "Split UI into components",
+    priority: "High",
+    assignee: "Nazarbek",
+    completed: true,
+  },
+  {
+    id: 3,
+    title: "Add events and state",
+    priority: "Normal",
+    assignee: "Nazarbek",
+    completed: false,
+  },
 ];
 
+function loadTasks() {
+  try {
+    const savedTasks = localStorage.getItem(storageKey);
+    return savedTasks ? JSON.parse(savedTasks) : initialTasks;
+  } catch {
+    return initialTasks;
+  }
+}
+
 export default function Home() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState(loadTasks);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("default");
   const [showTip, setShowTip] = useState(false);
 
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(tasks));
+  }, [tasks]);
+
   const doneCount = useMemo(
-    () => tasks.filter((task) => task.completed).length,
+    () =>
+      tasks.reduce((count, task) => {
+        return task.completed ? count + 1 : count;
+      }, 0),
     [tasks]
   );
 
+  const progress = useMemo(() => {
+    return tasks.length === 0 ? 0 : Math.round((doneCount / tasks.length) * 100);
+  }, [tasks, doneCount]);
+
   const visibleTasks = useMemo(() => {
     const query = search.trim().toLowerCase();
+    const priorityOrder = {
+      High: 0,
+      Normal: 1,
+      Low: 2,
+    };
 
-    return tasks.filter((task) => {
-      const matchesQuery = task.title.toLowerCase().includes(query);
+    const filteredTasks = tasks.filter((task) => {
+      const { title, assignee, priority, completed } = task;
+
+      const matchesQuery =
+        title.toLowerCase().includes(query) ||
+        assignee.toLowerCase().includes(query) ||
+        priority.toLowerCase().includes(query);
+
       const matchesFilter =
         filter === "all" ||
-        (filter === "done" && task.completed) ||
-        (filter === "active" && !task.completed);
+        (filter === "done" && completed) ||
+        (filter === "active" && !completed);
 
       return matchesQuery && matchesFilter;
     });
-  }, [tasks, search, filter]);
 
-  const addTask = (title, priority) => {
+    if (sortBy === "title") {
+      return [...filteredTasks].sort((a, b) => a.title.localeCompare(b.title));
+    }
+
+    if (sortBy === "priority") {
+      return [...filteredTasks].sort(
+        (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]
+      );
+    }
+
+    return filteredTasks;
+  }, [tasks, search, filter, sortBy]);
+
+  const addTask = ({ title, priority, assignee }) => {
     const nextTask = {
       id: Date.now(),
       title,
       priority,
+      assignee,
       completed: false,
     };
 
@@ -62,55 +127,56 @@ export default function Home() {
   };
 
   return (
-    <div className="app">
+    <div id="top" className="app">
       <Header />
 
       <main className="main">
         <section className="hero card">
-          <p className="heroKicker">Semester project</p>
-          <h2>BitTask Dashboard</h2>
-          <p className="muted">
-            Component-based task manager with filtering, quick search, and
-            interactive state updates.
-          </p>
+          <div className="heroContent">
+            <div>
+              <p className="heroKicker">Dashboard</p>
+              <p className="muted heroText">
+                A simple productivity workspace for managing daily tasks, priorities,
+                and progress in one place.
+              </p>
+            </div>
 
-          <div className="row">
-            <TaskStats total={tasks.length} done={doneCount} />
-            <button
-              className="btn"
-              type="button"
-              onClick={() => setShowTip((prev) => !prev)}
-            >
-              {showTip ? "Hide tip" : "Show tip"}
-            </button>
+            <TaskStats total={tasks.length} done={doneCount} progress={progress} />
           </div>
-
-          {showTip && (
-            <p className="tipText">
-              Keep each task title short and actionable. It makes weekly planning
-              faster.
-            </p>
-          )}
         </section>
 
         <section id="board" className="card boardCard">
           <div className="boardTop">
-            <h3>Tasks Board</h3>
-            <span className="pill">Showing: {visibleTasks.length}</span>
+            <div>
+              <h3>Tasks</h3>
+              <p className="muted boardSubtitle">
+                Add, search, filter, and manage your current tasks.
+              </p>
+            </div>
           </div>
 
-          <TaskForm onAddTask={addTask} />
+          <div className="formBlock">
+            <TaskForm onAddTask={addTask} />
+          </div>
 
           <div className="boardTools">
             <SearchBar value={search} onChange={setSearch} />
-            <TaskFilters filter={filter} onChange={setFilter} />
+            <TaskFilters
+              filter={filter}
+              onChange={setFilter}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+            />
           </div>
 
-          <TaskList tasks={visibleTasks} onToggle={toggleTask} onDelete={deleteTask} />
+          <TaskList
+            tasks={visibleTasks}
+            onToggle={toggleTask}
+            onDelete={deleteTask}
+          />
         </section>
       </main>
-
-      <Footer />
-    </div>
+  <Footer />
+</div>
   );
 }
