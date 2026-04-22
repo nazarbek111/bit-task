@@ -33,21 +33,6 @@ export default function Settings() {
 
         <div className="settingItem">
           <div className="settingInfo">
-            <h4>Dark Mode</h4>
-            <p>Enable dark theme for the application</p>
-          </div>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={settings.darkMode}
-              onChange={() => handleToggle("darkMode")}
-            />
-            <span className="toggleSlider"></span>
-          </label>
-        </div>
-
-        <div className="settingItem">
-          <div className="settingInfo">
             <h4>Auto Save</h4>
             <p>Automatically save changes to local storage</p>
           </div>

@@ -9,7 +9,6 @@ export function AuthProvider({ children }) {
     });
 
     const login = (username, password) => {
-        // Simulated auth — any non-empty credentials work
         if (!username || !password) return false;
         const userData = { username, loggedInAt: new Date().toISOString() };
         localStorage.setItem("bittask.user", JSON.stringify(userData));
