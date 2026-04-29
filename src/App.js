@@ -14,6 +14,7 @@ import Settings from "./pages/dashboard/Settings";
 import Activity from "./pages/dashboard/Activity";
 import Login from "./pages/auth/Login";
 import NotFound from "./pages/NotFound";
+import TaskDetail from "./pages/TaskDetail";
 import "./styles.css";
 
 function App() {
@@ -23,14 +24,13 @@ function App() {
                 <BrowserRouter>
                     <Navbar />
                     <Routes>
-                        {/* Main routes */}
                         <Route path="/" element={<Home />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/services" element={<Services />} />
                         <Route path="/contact" element={<Contact />} />
                         <Route path="/login" element={<Login />} />
+                        <Route path="/tasks/:id" element={<TaskDetail />} />
 
-                        {/* Protected nested dashboard routes */}
                         <Route
                             path="/dashboard"
                             element={
@@ -45,7 +45,6 @@ function App() {
                             <Route path="activity" element={<Activity />} />
                         </Route>
 
-                        {/* 404 */}
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                 </BrowserRouter>
