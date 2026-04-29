@@ -2,7 +2,9 @@
     box-sizing: border-box;
 }
 
-/* LIGHT THEME (default)*/
+/* ================================
+   LIGHT THEME (default)
+   ================================ */
 :root,
 [data-theme="light"] {
     --bg-1: #0f172a;
@@ -22,7 +24,9 @@
     --body-glow-2: rgba(56, 189, 248, 0.18);
 }
 
-/* DARK THEME */
+/* ================================
+   DARK THEME
+   ================================ */
 [data-theme="dark"] {
     --bg-1: #020617;
     --bg-2: #0f172a;

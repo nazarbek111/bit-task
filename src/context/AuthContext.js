@@ -3,11 +3,12 @@ import { createContext, useContext, useState } from "react";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+    // смотрим локал если был логин восстан
     const [user, setUser] = useState(() => {
         const saved = localStorage.getItem("bittask.user");
         return saved ? JSON.parse(saved) : null;
     });
-
+    // схр обьяек с именем и временем для логина
     const login = (username, password) => {
         if (!username || !password) return false;
         const userData = { username, loggedInAt: new Date().toISOString() };
