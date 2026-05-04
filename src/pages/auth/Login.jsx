@@ -48,9 +48,7 @@ export default function Login() {
                     />
                 </div>
                 {error && (
-                    <p style={{ color: "var(--danger)", margin: 0, fontSize: 14 }}>
-                        {error}
-                    </p>
+                    <p className="formError">{error}</p>
                 )}
                 <button type="submit" className="submitBtn">
                     Sign In

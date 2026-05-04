@@ -3,11 +3,13 @@ import { useState } from "react";
 import { taskService } from "../services/taskService";
 import { useFetch } from "../hooks/useFetch";
 
+
 export default function TaskDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [deleting, setDeleting] = useState(false);
-    const [toggling, setToggling] = useState(false);
+
+    const [actionLoading, setActionLoading] = useState(false);
+    const [successMsg, setSuccessMsg] = useState("");
 
     const { data: task, loading, error, refetch } = useFetch(
         () => taskService.getById(id),
@@ -15,105 +17,102 @@ export default function TaskDetail() {
     );
 
     const handleDelete = async () => {
-        if (!window.confirm("Delete this task?")) return;
-        setDeleting(true);
+        if (!window.confirm("Are you sure you want to delete this task?")) return;
+
+        setActionLoading(true);
         try {
             await taskService.remove(id);
-            navigate("/");
-        } catch {
-            alert("Failed to delete task");
-            setDeleting(false);
+            setSuccessMsg("Task deleted successfully!");
+            setTimeout(() => navigate("/"), 1500);
+        } catch (err) {
+            alert("Error: " + (err.message || "Failed to delete task"));
+            setActionLoading(false);
         }
     };
 
-    const handleToggle = async () => {
-        setToggling(true);
+    const handleToggleStatus = async () => {
+        setActionLoading(true);
         try {
             await taskService.update(id, { completed: !task.completed });
-            refetch();
-        } catch {
-            alert("Failed to update task");
+            setSuccessMsg("Status updated!");
+            await refetch();
+            setTimeout(() => setSuccessMsg(""), 2000);
+        } catch (err) {
+            alert("Update failed: " + err.message);
         } finally {
-            setToggling(false);
+            setActionLoading(false);
         }
     };
 
-    if (loading) {
-        return (
-            <div className="page">
-                <div className="loadingSpinner">Loading task...</div>
-            </div>
-        );
-    }
+    if (loading) return (
+        <div className="page centered">
+            <div className="spinner">Loading task details...</div>
+        </div>
+    );
 
-    if (error) {
-        return (
-            <div className="page">
-                <div className="errorState">
-                    <p>⚠️ {error}</p>
-                    <button className="btn" onClick={refetch}>Try again</button>
-                </div>
+    if (error) return (
+        <div className="page centered">
+            <div className="error-card">
+                <p>⚠️ Error: {error}</p>
+                <button className="btn" onClick={refetch}>Retry</button>
             </div>
-        );
-    }
+        </div>
+    );
 
-    if (!task) {
-        return (
-            <div className="page">
-                <div className="emptyState">
-                    <p>Task not found.</p>
-                    <Link to="/" className="btn">Go back</Link>
-                </div>
-            </div>
-        );
-    }
+    if (!task) return <div className="page centered">Task not found.</div>;
 
     return (
-        <div className="page" style={{ maxWidth: 600 }}>
-            <Link to="/" className="backLink">← Back to tasks</Link>
+        <div className="page task-detail-container">
+            <header className="task-header">
+                <Link to="/" className="back-btn">← Back to Dashboard</Link>
+                {successMsg && <span className="toast-success">{successMsg}</span>}
+            </header>
 
-            <div className="card" style={{ marginTop: 20, padding: 28 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
-                    <h1 style={{ margin: 0, fontSize: 24 }}>{task.title}</h1>
-                    <span className={`badge ${task.completed ? "badge--done" : "badge--progress"}`}>
-            {task.completed ? "Done" : "In Progress"}
-          </span>
-                </div>
+            <article className="card shadow-lg">
+                <section className="card-header">
+                    <h1>{task.title}</h1>
+                    <span className={`status-badge ${task.completed ? "done" : "pending"}`}>
+                        {task.completed ? "Completed" : "In Progress"}
+                    </span>
+                </section>
 
-                <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 10 }}>
-                    <div className="detailRow">
-                        <span className="detailLabel">Priority</span>
-                        <span className={`priority priority--${task.priority?.toLowerCase()}`}>
-              {task.priority}
-            </span>
-                    </div>
-                    <div className="detailRow">
-                        <span className="detailLabel">Assignee</span>
-                        <span>{task.assignee}</span>
-                    </div>
-                    <div className="detailRow">
-                        <span className="detailLabel">Task ID</span>
-                        <span className="muted">#{task.id}</span>
-                    </div>
-                </div>
+                <hr />
 
-                <div style={{ marginTop: 28, display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <section className="card-body">
+                    <div className="info-grid">
+                        <div className="info-item">
+                            <label>Priority:</label>
+                            <span className={`prio-${task.priority?.toLowerCase()}`}>{task.priority}</span>
+                        </div>
+                        <div className="info-item">
+                            <label>Assignee:</label>
+                            <span>{task.assignee}</span>
+                        </div>
+                        <div className="info-item">
+                            <label>ID:</label>
+                            <span className="text-muted">#{task.id}</span>
+                        </div>
+                    </div>
+                </section>
+
+                <footer className="card-actions">
                     <button
-                        className="btn btn--primary"
-                        onClick={handleToggle}
-                        disabled={toggling}
+                        className="btn btn-primary"
+                        onClick={handleToggleStatus}
+                        disabled={actionLoading}
                     >
-                        {toggling ? "Updating..." : task.completed ? "Mark In Progress" : "Mark Done"}
+                        {actionLoading ? "Processing..." : task.completed ? "Undo Task" : "Complete Task"}
                     </button>
+
                     <button
-                        className="btn btn--danger"
+                        className="btn btn-outline-danger"
                         onClick={handleDelete}
-                        disabled={deleting}
+                        disabled={actionLoading}
                     >
-                        {deleting ? "Deleting..." : "Delete Task"}
+                        Delete
                     </button>
-                </div>
-            </div>
+                </footer>
+            </article>
         </div>
     );
 }

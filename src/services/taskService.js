@@ -1,4 +1,3 @@
-// API service layer — all API calls go through here, never directly in components
 const BASE_URL = "https://69f1a2b8c1533dbedc9ea975.mockapi.io";
 
 const handleResponse = async (res) => {
@@ -9,15 +8,12 @@ const handleResponse = async (res) => {
 };
 
 export const taskService = {
-    // GET all tasks
     getAll: () =>
         fetch(`${BASE_URL}/tasks`).then(handleResponse),
 
-    // GET one task by id
     getById: (id) =>
         fetch(`${BASE_URL}/tasks/${id}`).then(handleResponse),
 
-    // POST create new task
     create: (task) =>
         fetch(`${BASE_URL}/tasks`, {
             method: "POST",
@@ -25,7 +21,6 @@ export const taskService = {
             body: JSON.stringify(task),
         }).then(handleResponse),
 
-    // PUT update task
     update: (id, data) =>
         fetch(`${BASE_URL}/tasks/${id}`, {
             method: "PUT",
@@ -33,7 +28,6 @@ export const taskService = {
             body: JSON.stringify(data),
         }).then(handleResponse),
 
-    // DELETE task
     remove: (id) =>
         fetch(`${BASE_URL}/tasks/${id}`, {
             method: "DELETE",

@@ -1,81 +1,80 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 const initialForm = {
-  title: "",
-  priority: "Normal",
-  assignee: "",
+    title: '',
+    priority: 'Normal',
+    assignee: '',
 };
 
-export default function TaskForm({ onAddTask }) {
-  const [formData, setFormData] = useState(initialForm);
-  const [error, setError] = useState("");
+export default function TaskForm({ onAddTask, disabled }) {
+    const [formData, setFormData] = useState(initialForm);
+    const [error, setError] = useState('');
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const submit = (event) => {
-    event.preventDefault();
-
-    const trimmedData = {
-      title: formData.title.trim(),
-      priority: formData.priority.trim(),
-      assignee: formData.assignee.trim(),
+    const handleChange = (event) => {
+        const { name, value } = event.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    if (!trimmedData.title || !trimmedData.priority || !trimmedData.assignee) {
-      setError("Please fill in all fields.");
-      return;
-    }
+    const submit = (event) => {
+        event.preventDefault();
 
-    onAddTask(trimmedData);
-    setFormData(initialForm);
-    setError("");
-  };
+        const trimmedData = {
+            title: formData.title.trim(),
+            priority: formData.priority.trim(),
+            assignee: formData.assignee.trim(),
+        };
 
-  const { title, priority, assignee } = formData;
+        if (!trimmedData.title || !trimmedData.priority || !trimmedData.assignee) {
+            setError('Please fill in all fields before adding a task.');
+            return;
+        }
 
-  return (
-    <form className="taskForm" onSubmit={submit}>
-      <input
-        className="input"
-        name="title"
-        type="text"
-        value={title}
-        onChange={handleChange}
-        placeholder="Task title"
-      />
+        onAddTask(trimmedData);
+        setFormData(initialForm);
+        setError('');
+    };
 
-      <select
-        className="select"
-        name="priority"
-        value={priority}
-        onChange={handleChange}
-      >
-        <option value="Normal">Normal</option>
-        <option value="High">High</option>
-        <option value="Low">Low</option>
-      </select>
+    const { title, priority, assignee } = formData;
 
-      <input
-        className="input"
-        name="assignee"
-        type="text"
-        value={assignee}
-        onChange={handleChange}
-        placeholder="Assignee"
-      />
+    return (
+        <form className="taskForm" onSubmit={submit}>
+            <input
+                className="input"
+                name="title"
+                type="text"
+                value={title}
+                onChange={handleChange}
+                placeholder="Task title"
+                disabled={disabled}
+            />
 
-      <button className="btn btn--primary" type="submit">
-        Add Task
-      </button>
+            <select
+                className="select"
+                name="priority"
+                value={priority}
+                onChange={handleChange}
+                disabled={disabled}
+            >
+                <option value="Normal">Normal</option>
+                <option value="High">High</option>
+                <option value="Low">Low</option>
+            </select>
 
-      {error && <p className="muted">{error}</p>}
-    </form>
-  );
+            <input
+                className="input"
+                name="assignee"
+                type="text"
+                value={assignee}
+                onChange={handleChange}
+                placeholder="Assignee"
+                disabled={disabled}
+            />
+
+            <button className="btn btn--primary" type="submit" disabled={disabled}>
+                {disabled ? 'Adding...' : 'Add Task'}
+            </button>
+
+            {error && <p className="formError">{error}</p>}
+        </form>
+    );
 }

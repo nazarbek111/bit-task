@@ -168,6 +168,16 @@ a {
     line-height: 1.45;
 }
 
+.formError {
+    color: var(--danger);
+    font-size: 13px;
+    margin: 4px 0 0;
+    padding: 6px 10px;
+    background: rgba(239, 68, 68, 0.08);
+    border-left: 3px solid var(--danger);
+    border-radius: 0 4px 4px 0;
+}
+
 .tipText {
     margin-top: 12px;
     padding: 10px 12px;
@@ -1106,4 +1116,10 @@ a {
     background: #0c2d48;
     border-color: #1d4ed8;
     color: #93c5fd;
+}
+
+.active-link {
+    color: #ff4757;
+    font-weight: bold;
+    border-bottom: 2px solid #ff4757;
 }
