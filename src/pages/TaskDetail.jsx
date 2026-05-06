@@ -3,7 +3,6 @@ import { useState } from "react";
 import { taskService } from "../services/taskService";
 import { useFetch } from "../hooks/useFetch";
 
-
 export default function TaskDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -18,12 +17,11 @@ export default function TaskDetail() {
 
     const handleDelete = async () => {
         if (!window.confirm("Are you sure you want to delete this task?")) return;
-
         setActionLoading(true);
         try {
             await taskService.remove(id);
-            setSuccessMsg("Task deleted successfully!");
-            setTimeout(() => navigate("/"), 1500);
+            setSuccessMsg("Task deleted!");
+            setTimeout(() => navigate("/"), 1200);
         } catch (err) {
             alert("Error: " + (err.message || "Failed to delete task"));
             setActionLoading(false);
@@ -46,7 +44,7 @@ export default function TaskDetail() {
 
     if (loading) return (
         <div className="page centered">
-            <div className="spinner">Loading task details...</div>
+            <div className="loadingSpinner">Loading task details...</div>
         </div>
     );
 
@@ -97,15 +95,14 @@ export default function TaskDetail() {
 
                 <footer className="card-actions">
                     <button
-                        className="btn btn-primary"
+                        className="btn btn--primary"
                         onClick={handleToggleStatus}
                         disabled={actionLoading}
                     >
                         {actionLoading ? "Processing..." : task.completed ? "Undo Task" : "Complete Task"}
                     </button>
-
                     <button
-                        className="btn btn-outline-danger"
+                        className="btn btn--danger"
                         onClick={handleDelete}
                         disabled={actionLoading}
                     >

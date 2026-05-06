@@ -8,8 +8,11 @@ import TaskStats from "../components/TaskStats";
 import TaskList from "../components/TaskList";
 import { useFetch } from "../hooks/useFetch";
 import { taskService } from "../services/taskService";
+import { useAuth } from "../context/AuthContext";
 
 export default function Home() {
+    const { user } = useAuth();
+    const userId = user?.username;
 
     const [search, setSearch] = useState("");
     const [filter, setFilter] = useState("all");
@@ -17,8 +20,8 @@ export default function Home() {
     const [submitting, setSubmitting] = useState(false);
 
     const { data: tasks, loading, error, refetch } = useFetch(
-        () => taskService.getAll(),
-        []
+        () => taskService.getByUser(userId),
+        [userId]
     );
 
     const safeTask = useMemo(() => tasks || [], [tasks]);
@@ -58,14 +61,14 @@ export default function Home() {
     const addTask = useCallback(async ({ title, priority, assignee }) => {
         setSubmitting(true);
         try {
-            await taskService.create({ title, priority, assignee, completed: false });
+            await taskService.create({ title, priority, assignee, completed: false }, userId);
             refetch();
         } catch {
             alert("Failed to add task. Check your API connection.");
         } finally {
             setSubmitting(false);
         }
-    }, [refetch]);
+    }, [refetch, userId]);
 
     const toggleTask = useCallback(async (id) => {
         const task = safeTask.find((t) => t.id === id);
@@ -91,17 +94,17 @@ export default function Home() {
         <div id="top" className="app">
             <Header />
             <main className="main">
-                <section className="hero card">
-                    <div className="heroContent">
-                        <div>
-                            <p className="heroKicker">Dashboard</p>
-                            <p className="muted heroText">
-                                A simple productivity workspace for managing daily tasks, priorities,
-                                and progress in one place.
-                            </p>
-                        </div>
-                        <TaskStats total={safeTask.length} done={doneCount} progress={progress} />
+
+                <section className="heroBanner card">
+                    <div className="heroBannerLeft">
+                        <p className="heroKicker">Dashboard</p>
+                        <p className="muted">
+                            Welcome back,{" "}
+                            <strong style={{ color: "var(--text)" }}>{userId}</strong>.
+                            Manage your tasks below.
+                        </p>
                     </div>
+                    <TaskStats total={safeTask.length} done={doneCount} progress={progress} />
                 </section>
 
                 <section id="board" className="card boardCard">
@@ -134,7 +137,7 @@ export default function Home() {
 
                     {!loading && !error && safeTask.length === 0 && (
                         <div className="emptyState">
-                            <p>No tasks yet. Add your first task above!</p>
+                            No tasks yet. Add your first task above!
                         </div>
                     )}
 

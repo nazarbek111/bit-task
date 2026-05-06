@@ -8,17 +8,25 @@ const handleResponse = async (res) => {
 };
 
 export const taskService = {
+    // Получаем ВСЕ задачи, фильтруем по userId на клиенте
     getAll: () =>
         fetch(`${BASE_URL}/tasks`).then(handleResponse),
+
+    // Получаем задачи конкретного пользователя
+    getByUser: (userId) =>
+        fetch(`${BASE_URL}/tasks`)
+            .then(handleResponse)
+            .then((tasks) => tasks.filter((task) => task.userId === userId)),
 
     getById: (id) =>
         fetch(`${BASE_URL}/tasks/${id}`).then(handleResponse),
 
-    create: (task) =>
+    // При создании обязательно передаём userId
+    create: (task, userId) =>
         fetch(`${BASE_URL}/tasks`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(task),
+            body: JSON.stringify({ ...task, userId }),
         }).then(handleResponse),
 
     update: (id, data) =>
