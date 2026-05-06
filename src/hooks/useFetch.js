@@ -27,7 +27,6 @@ export function useFetch(fetchFn, deps = []) {
         return () => {
             cancelled = true;
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [trigger, ...deps]);
 
     const refetch = () => setTrigger((n) => n + 1);
