@@ -1,53 +1,71 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+const PRIORITY_CLASS = {
+    High:   "taskItem--high",
+    Normal: "taskItem--normal",
+    Low:    "taskItem--low",
+};
 
 const TaskItem = memo(function TaskItem({ task, onToggle, onDelete }) {
     const { id, title, priority, assignee, completed } = task;
     const navigate = useNavigate();
+    const [removing, setRemoving] = useState(false);
+
+    const handleDelete = () => {
+        setRemoving(true);
+        setTimeout(() => onDelete(id), 280);
+    };
 
     return (
-        <div className="taskItem">
+        <div className={[
+            "taskItem",
+            PRIORITY_CLASS[priority] || "",
+            removing ? "taskItem--removing" : "",
+            completed ? "taskItem--done" : "",
+        ].join(" ")}>
+            <div className="taskItemAccent" />
             <div className="taskLeft">
                 <button
-                    className={"badge " + (completed ? "badge--done" : "badge--progress")}
+                    className={"taskCheck " + (completed ? "taskCheck--done" : "")}
                     onClick={() => onToggle(id)}
                     type="button"
                     title="Toggle status"
                 >
-                    {completed ? "Done" : "In Progress"}
+                    {completed ? "✓" : ""}
                 </button>
-
-                <div>
+                <div className="taskBody">
                     <div
                         className={"taskTitle " + (completed ? "taskTitle--done" : "")}
-                        onClick={() => navigate(`/tasks/${id}`)}
+                        onClick={() => navigate("/tasks/" + id)}
                         role="button"
                         tabIndex={0}
-                        onKeyDown={(e) => e.key === "Enter" && navigate(`/tasks/${id}`)}
+                        onKeyDown={(e) => e.key === "Enter" && navigate("/tasks/" + id)}
                     >
                         {title}
                     </div>
-
-                    <div className="muted">
-                        Assignee: {assignee}
-                    </div>
-
-                    <div className="muted">
-                        Priority:{" "}
-                        <span className={"priority priority--" + priority?.toLowerCase()}>
+                    <div className="taskMeta">
+                        <span className={"taskPriority taskPriority--" + priority?.toLowerCase()}>
                             {priority}
                         </span>
+                        <span className="taskMetaDot">·</span>
+                        <span className="taskAssignee">{assignee}</span>
                     </div>
                 </div>
             </div>
-
-            <button
-                className="btn btn--danger"
-                onClick={() => onDelete(id)}
-                type="button"
-            >
-                Delete
-            </button>
+            <div className="taskRight">
+                <span className={"taskBadge " + (completed ? "taskBadge--done" : "taskBadge--progress")}>
+                    {completed ? "Done" : "In Progress"}
+                </span>
+                <button
+                    className="taskDeleteBtn"
+                    onClick={handleDelete}
+                    type="button"
+                    title="Delete task"
+                >
+                    ✕
+                </button>
+            </div>
         </div>
     );
 });

@@ -1,65 +1,109 @@
 import { useState } from "react";
 
+const EMPTY = { name: "", email: "", message: "" };
+
+function validate({ name, email, message }) {
+    const errors = {};
+    if (!name.trim())                        errors.name    = "Name is required.";
+    if (!email.trim())                       errors.email   = "Email is required.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+        errors.email   = "Enter a valid email address.";
+    if (!message.trim())                     errors.message = "Message cannot be empty.";
+    else if (message.trim().length < 10)     errors.message = "Message must be at least 10 characters.";
+    return errors;
+}
+
 export default function Contact() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
+    const [formData, setFormData]   = useState(EMPTY);
+    const [errors, setErrors]       = useState({});
+    const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert("Thank you for your message! We will get back to you soon.");
-    setFormData({ name: "", email: "", message: "" });
-  };
+    const set = (field) => (e) => {
+        setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+        // clear error on change
+        if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
+    };
 
-  return (
-    <div className="page">
-      <h1>Contact Us</h1>
-      <p>Have questions or feedback? We would love to hear from you!</p>
-      
-      <form onSubmit={handleSubmit} className="contactForm">
-        <div className="formGroup">
-          <label htmlFor="name">Name</label>
-          <input
-            type="text"
-            id="name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-          />
-        </div>
-        <div className="formGroup">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            required
-          />
-        </div>
-        <div className="formGroup">
-          <label htmlFor="message">Message</label>
-          <textarea
-            id="message"
-            rows="5"
-            value={formData.message}
-            onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-            required
-          />
-        </div>
-        <button type="submit" className="submitBtn">
-          Send Message
-        </button>
-      </form>
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const errs = validate(formData);
+        if (Object.keys(errs).length) {
+            setErrors(errs);
+            return;
+        }
+        setSubmitted(true);
+        setFormData(EMPTY);
+        setErrors({});
+    };
 
-      <div className="contactInfo">
-        <h3>Other Ways to Reach Us</h3>
-        <p>Email: support@bittask.com</p>
-        <p>Phone: +7 (747) 776-5875</p>
-        <p>Address: 8 microdistrict 37 house, Almaty, Kazakhstan</p>
-      </div>
-    </div>
-  );
+    return (
+        <div className="page">
+            <h1>Contact Us</h1>
+            <p>Have questions or feedback? We would love to hear from you!</p>
+
+            {submitted ? (
+                <div className="successBanner">
+                    ✓ Message sent! We'll get back to you soon.
+                    <button
+                        className="successBannerClose"
+                        onClick={() => setSubmitted(false)}
+                    >
+                        Send another
+                    </button>
+                </div>
+            ) : (
+                <div className="contactForm">
+                    <div className="formGroup">
+                        <label htmlFor="name">Name</label>
+                        <input
+                            id="name"
+                            type="text"
+                            value={formData.name}
+                            onChange={set("name")}
+                            className={errors.name ? "inputError" : ""}
+                            placeholder="e.g. Nazarbek"
+                        />
+                        {errors.name && <span className="fieldError">{errors.name}</span>}
+                    </div>
+
+                    <div className="formGroup">
+                        <label htmlFor="email">Email</label>
+                        <input
+                            id="email"
+                            type="text"
+                            value={formData.email}
+                            onChange={set("email")}
+                            className={errors.email ? "inputError" : ""}
+                            placeholder="you@example.com"
+                        />
+                        {errors.email && <span className="fieldError">{errors.email}</span>}
+                    </div>
+
+                    <div className="formGroup">
+                        <label htmlFor="message">Message</label>
+                        <textarea
+                            id="message"
+                            rows="5"
+                            value={formData.message}
+                            onChange={set("message")}
+                            className={errors.message ? "inputError" : ""}
+                            placeholder="Write your message here..."
+                        />
+                        {errors.message && <span className="fieldError">{errors.message}</span>}
+                    </div>
+
+                    <button className="submitBtn" onClick={handleSubmit}>
+                        Send Message
+                    </button>
+                </div>
+            )}
+
+            <div className="contactInfo">
+                <h3>Other Ways to Reach Us</h3>
+                <p>Email: support@bittask.com</p>
+                <p>Phone: +7 (747) 776-5875</p>
+                <p>Address: 8 microdistrict 37 house, Almaty, Kazakhstan</p>
+            </div>
+        </div>
+    );
 }

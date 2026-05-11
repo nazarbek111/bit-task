@@ -1,4 +1,4 @@
-const BASE_URL = "https://69f1a2b8c1533dbedc9ea975.mockapi.io";
+const BASE_URL = process.env.REACT_APP_API_URL;
 
 const handleResponse = async (res) => {
     if (!res.ok) {
@@ -8,20 +8,19 @@ const handleResponse = async (res) => {
 };
 
 export const taskService = {
-    // Получаем ВСЕ задачи, фильтруем по userId на клиенте
     getAll: () =>
         fetch(`${BASE_URL}/tasks`).then(handleResponse),
 
-    // Получаем задачи конкретного пользователя
+    // Задачи конкретного пользователя — фильтрация на клиенте
     getByUser: (userId) =>
         fetch(`${BASE_URL}/tasks`)
             .then(handleResponse)
-            .then((tasks) => tasks.filter((task) => task.userId === userId)),
+            .then((tasks) => tasks.filter((t) => t.userId === userId)),
 
     getById: (id) =>
         fetch(`${BASE_URL}/tasks/${id}`).then(handleResponse),
 
-    // При создании обязательно передаём userId
+    // userId обязателен при создании
     create: (task, userId) =>
         fetch(`${BASE_URL}/tasks`, {
             method: "POST",
@@ -37,7 +36,5 @@ export const taskService = {
         }).then(handleResponse),
 
     remove: (id) =>
-        fetch(`${BASE_URL}/tasks/${id}`, {
-            method: "DELETE",
-        }).then(handleResponse),
+        fetch(`${BASE_URL}/tasks/${id}`, { method: "DELETE" }).then(handleResponse),
 };
