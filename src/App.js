@@ -13,6 +13,8 @@ import CommandPalette from "./components/CommandPalette";
 
 import Home from "./pages/Home";
 import About from "./pages/About";
+import Changelog from "./pages/Changelog";
+import Shortcuts from "./pages/Shortcuts";
 import Dashboard from "./pages/Dashboard";
 import Overview from "./pages/dashboard/Overview";
 import Profile from "./pages/dashboard/Profile";
@@ -52,6 +54,8 @@ function AppShell() {
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/changelog" element={<Changelog />} />
+                <Route path="/shortcuts" element={<Shortcuts />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/tasks/:id" element={<TaskDetail />} />
 

@@ -21,6 +21,8 @@ export default function Navbar({ onOpenPalette }) {
             <ul className="navLinks">
                 <li><NavLink to="/" className="navLink" end>Home</NavLink></li>
                 <li><NavLink to="/about" className="navLink">About</NavLink></li>
+                <li><NavLink to="/changelog" className="navLink">Changelog</NavLink></li>
+                <li><NavLink to="/shortcuts" className="navLink">Shortcuts</NavLink></li>
                 <li><NavLink to="/dashboard" className="navLink">Dashboard</NavLink></li>
 
                 <li>
