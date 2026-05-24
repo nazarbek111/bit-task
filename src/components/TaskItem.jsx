@@ -1,5 +1,6 @@
 import { memo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { formatDueDate, dueDateStatus } from "../utils/dateUtils";
 
 const PRIORITY_CLASS = {
     High:   "taskItem--high",
@@ -8,14 +9,18 @@ const PRIORITY_CLASS = {
 };
 
 const TaskItem = memo(function TaskItem({ task, onToggle, onDelete }) {
-    const { id, title, priority, assignee, completed } = task;
+    const { id, title, priority, assignee, completed, tags, dueDate } = task;
     const navigate = useNavigate();
     const [removing, setRemoving] = useState(false);
 
-    const handleDelete = () => {
+    const handleDelete = (event) => {
+        event.stopPropagation();
         setRemoving(true);
         setTimeout(() => onDelete(id), 280);
     };
+
+    const dateLabel = formatDueDate(dueDate);
+    const dateState = dueDateStatus(dueDate);
 
     return (
         <div className={[
@@ -37,19 +42,28 @@ const TaskItem = memo(function TaskItem({ task, onToggle, onDelete }) {
                 <div className="taskBody">
                     <div
                         className={"taskTitle " + (completed ? "taskTitle--done" : "")}
-                        onClick={() => navigate("/tasks/" + id)}
+                        onClick={() => navigate(`/tasks/${id}`)}
                         role="button"
                         tabIndex={0}
-                        onKeyDown={(e) => e.key === "Enter" && navigate("/tasks/" + id)}
+                        onKeyDown={(e) => e.key === "Enter" && navigate(`/tasks/${id}`)}
                     >
                         {title}
                     </div>
                     <div className="taskMeta">
-                        <span className={"taskPriority taskPriority--" + priority?.toLowerCase()}>
+                        <span className={`taskPriority taskPriority--${priority?.toLowerCase()}`}>
                             {priority}
                         </span>
                         <span className="taskMetaDot">·</span>
-                        <span className="taskAssignee">{assignee}</span>
+                        <span className="taskAssignee">{assignee || "Unassigned"}</span>
+                        {dateLabel && (
+                            <>
+                                <span className="taskMetaDot">·</span>
+                                <span className={`taskDate taskDate--${dateState}`}>🗓 {dateLabel}</span>
+                            </>
+                        )}
+                        {tags?.map((t) => (
+                            <span key={t} className="taskTag">#{t}</span>
+                        ))}
                     </div>
                 </div>
             </div>

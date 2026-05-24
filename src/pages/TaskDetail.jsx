@@ -2,13 +2,14 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import { taskService } from "../services/taskService";
 import { useFetch } from "../hooks/useFetch";
+import { useToast } from "../hooks/useToast";
+import { formatDueDate, relativeTime } from "../utils/dateUtils";
 
 export default function TaskDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-
+    const toast = useToast();
     const [actionLoading, setActionLoading] = useState(false);
-    const [successMsg, setSuccessMsg] = useState("");
 
     const { data: task, loading, error, refetch } = useFetch(
         () => taskService.getById(id),
@@ -20,10 +21,10 @@ export default function TaskDetail() {
         setActionLoading(true);
         try {
             await taskService.remove(id);
-            setSuccessMsg("Task deleted!");
-            setTimeout(() => navigate("/"), 1200);
+            toast("Task deleted", "info");
+            setTimeout(() => navigate("/"), 600);
         } catch (err) {
-            alert("Error: " + (err.message || "Failed to delete task"));
+            toast(`Error: ${err.message || "Failed to delete task"}`, "error");
             setActionLoading(false);
         }
     };
@@ -31,84 +32,109 @@ export default function TaskDetail() {
     const handleToggleStatus = async () => {
         setActionLoading(true);
         try {
-            await taskService.update(id, { completed: !task.completed });
-            setSuccessMsg("Status updated!");
+            const nextCompleted = !task.completed;
+            await taskService.update(id, {
+                ...task,
+                completed: nextCompleted,
+                status: nextCompleted ? "done" : "todo",
+            });
             await refetch();
-            setTimeout(() => setSuccessMsg(""), 2000);
+            toast("Status updated", "success");
         } catch (err) {
-            alert("Update failed: " + err.message);
+            toast(`Update failed: ${err.message}`, "error");
         } finally {
             setActionLoading(false);
         }
     };
 
-    if (loading) return (
-        <div className="page centered">
-            <div className="loadingSpinner">Loading task details...</div>
-        </div>
-    );
-
-    if (error) return (
-        <div className="page centered">
-            <div className="error-card">
-                <p>⚠️ Error: {error}</p>
-                <button className="btn" onClick={refetch}>Retry</button>
+    if (loading) {
+        return (
+            <div className="page centered">
+                <div className="muted">Loading task…</div>
             </div>
-        </div>
-    );
+        );
+    }
 
-    if (!task) return <div className="page centered">Task not found.</div>;
+    if (error) {
+        return (
+            <div className="page centered">
+                <div className="errorState">
+                    <p>⚠️ {error}</p>
+                    <button className="btn" onClick={refetch}>Retry</button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!task) {
+        return (
+            <div className="page centered">
+                <div className="emptyState">
+                    <div className="emptyIcon">🔍</div>
+                    <p>Task not found.</p>
+                    <Link to="/" className="btn btn--primary" style={{ marginTop: 12 }}>Back to Dashboard</Link>
+                </div>
+            </div>
+        );
+    }
+
+    const dateLabel = formatDueDate(task.dueDate);
 
     return (
-        <div className="page task-detail-container">
+        <div className="task-detail-container">
             <header className="task-header">
                 <Link to="/" className="back-btn">← Back to Dashboard</Link>
-                {successMsg && <span className="toast-success">{successMsg}</span>}
             </header>
 
-            <article className="card shadow-lg">
-                <section className="card-header">
-                    <h1>{task.title}</h1>
-                    <span className={`status-badge ${task.completed ? "done" : "pending"}`}>
-                        {task.completed ? "Completed" : "In Progress"}
+            <article className="card detailCard">
+                <h1 className="detailTitle">{task.title}</h1>
+
+                <div className="detailMeta">
+                    <span className={`taskBadge ${task.completed ? "taskBadge--done" : "taskBadge--progress"}`}>
+                        {task.completed ? "Done" : (task.status === "in-progress" ? "In Progress" : "To Do")}
                     </span>
-                </section>
+                    <span className={`taskPriority taskPriority--${task.priority?.toLowerCase()}`}>
+                        {task.priority}
+                    </span>
+                    {dateLabel && <span className="taskDate">🗓 {dateLabel}</span>}
+                </div>
 
-                <hr />
+                <div className="detailSection">
+                    <div className="detailLabel">Assignee</div>
+                    <div className="detailValue">{task.assignee || "Unassigned"}</div>
+                </div>
 
-                <section className="card-body">
-                    <div className="info-grid">
-                        <div className="info-item">
-                            <label>Priority:</label>
-                            <span className={`prio-${task.priority?.toLowerCase()}`}>{task.priority}</span>
-                        </div>
-                        <div className="info-item">
-                            <label>Assignee:</label>
-                            <span>{task.assignee}</span>
-                        </div>
-                        <div className="info-item">
-                            <label>ID:</label>
-                            <span className="text-muted">#{task.id}</span>
+                {task.tags?.length > 0 && (
+                    <div className="detailSection">
+                        <div className="detailLabel">Tags</div>
+                        <div className="detailValue">
+                            {task.tags.map((t) => <span key={t} className="taskTag" style={{ marginRight: 6 }}>#{t}</span>)}
                         </div>
                     </div>
-                </section>
+                )}
 
-                <footer className="card-actions">
-                    <button
-                        className="btn btn--primary"
-                        onClick={handleToggleStatus}
-                        disabled={actionLoading}
-                    >
-                        {actionLoading ? "Processing..." : task.completed ? "Undo Task" : "Complete Task"}
+                {task.description && (
+                    <div className="detailSection">
+                        <div className="detailLabel">Description</div>
+                        <div className="detailValue">{task.description}</div>
+                    </div>
+                )}
+
+                {task.createdAt && (
+                    <div className="detailSection">
+                        <div className="detailLabel">Created</div>
+                        <div className="detailValue muted">{relativeTime(task.createdAt)}</div>
+                    </div>
+                )}
+
+                <div className="detailActions">
+                    <button className="btn btn--primary" onClick={handleToggleStatus} disabled={actionLoading}>
+                        {task.completed ? "↺ Mark as active" : "✓ Mark as done"}
                     </button>
-                    <button
-                        className="btn btn--danger"
-                        onClick={handleDelete}
-                        disabled={actionLoading}
-                    >
-                        Delete
+                    <button className="btn btn--danger" onClick={handleDelete} disabled={actionLoading}>
+                        ✕ Delete task
                     </button>
-                </footer>
+                </div>
             </article>
         </div>
     );

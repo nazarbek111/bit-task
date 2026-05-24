@@ -1,40 +1,56 @@
-import { useState } from 'react';
+import { useState, useMemo } from "react";
+import { parseSmartInput } from "../utils/smartParser";
 
-const initialForm = {
-    title: '',
-    priority: 'Normal',
-    assignee: '',
-};
+const initialForm = { title: "", priority: "Normal", assignee: "" };
 
 export default function TaskForm({ onAddTask, disabled }) {
     const [formData, setFormData] = useState(initialForm);
-    const [error, setError] = useState('');
+    const [error, setError] = useState("");
+
+    // Live preview of what the parser is currently extracting.
+    const preview = useMemo(() => parseSmartInput(formData.title), [formData.title]);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+        if (error) setError("");
     };
 
     const submit = (event) => {
         event.preventDefault();
 
-        const trimmedData = {
-            title: formData.title.trim(),
-            priority: formData.priority.trim(),
-            assignee: formData.assignee.trim(),
-        };
+        const parsed = parseSmartInput(formData.title);
+        const title = parsed.title;
+        const priority = parsed.priority !== "Normal" ? parsed.priority : formData.priority;
+        const assignee = parsed.assignee || formData.assignee.trim();
 
-        if (!trimmedData.title || !trimmedData.priority || !trimmedData.assignee) {
-            setError('Please fill in all fields before adding a task.');
+        if (!title) {
+            setError("Task title is required.");
             return;
         }
 
-        onAddTask(trimmedData);
+        onAddTask({
+            title,
+            priority,
+            assignee: assignee || "Unassigned",
+            tags: parsed.tags,
+            dueDate: parsed.dueDate,
+            status: "todo",
+            completed: false,
+        });
+
         setFormData(initialForm);
-        setError('');
+        setError("");
     };
 
     const { title, priority, assignee } = formData;
+
+    // Show the live preview only when shortcuts are actually present.
+    const hasShortcuts =
+        preview.priority !== "Normal" ||
+        preview.tags.length > 0 ||
+        preview.assignee ||
+        preview.dueDate;
 
     return (
         <form className="taskForm" onSubmit={submit}>
@@ -44,8 +60,9 @@ export default function TaskForm({ onAddTask, disabled }) {
                 type="text"
                 value={title}
                 onChange={handleChange}
-                placeholder="Task title"
+                placeholder='Add task… try "design landing tomorrow !high #web"'
                 disabled={disabled}
+                autoComplete="off"
             />
 
             <select
@@ -55,8 +72,8 @@ export default function TaskForm({ onAddTask, disabled }) {
                 onChange={handleChange}
                 disabled={disabled}
             >
-                <option value="Normal">Normal</option>
                 <option value="High">High</option>
+                <option value="Normal">Normal</option>
                 <option value="Low">Low</option>
             </select>
 
@@ -66,13 +83,29 @@ export default function TaskForm({ onAddTask, disabled }) {
                 type="text"
                 value={assignee}
                 onChange={handleChange}
-                placeholder="Assignee"
+                placeholder="Assignee (optional)"
                 disabled={disabled}
             />
 
             <button className="btn btn--primary" type="submit" disabled={disabled}>
-                {disabled ? 'Adding...' : 'Add Task'}
+                {disabled ? "Adding…" : "Add Task"}
             </button>
+
+            {hasShortcuts && (
+                <p className="smartHint">
+                    ✨ Detected:&nbsp;
+                    {preview.priority !== "Normal" && <code>!{preview.priority}</code>}
+                    {preview.assignee && <> <code>@{preview.assignee}</code></>}
+                    {preview.tags.length > 0 && <> {preview.tags.map((t) => <code key={t}>#{t}</code>)}</>}
+                    {preview.dueDate && <> <code>🗓 {new Date(preview.dueDate).toLocaleDateString()}</code></>}
+                </p>
+            )}
+
+            {!hasShortcuts && (
+                <p className="smartHint">
+                    💡 Tip: type <code>!high</code> <code>#tag</code> <code>@name</code> <code>tomorrow</code> for shortcuts
+                </p>
+            )}
 
             {error && <p className="formError">{error}</p>}
         </form>

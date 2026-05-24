@@ -1,11 +1,9 @@
-export default function TaskStats({ total, done }) {
-  const progress = total === 0 ? 0 : Math.round((done / total) * 100);
-
-  return (
-    <div className="stats">
-      <span className="pill">Total: {total}</span>
-      <span className="pill">Done: {done}</span>
-      <span className="pill">Progress: {progress}%</span>
-    </div>
-  );
+export default function TaskStats({ total, done, progress }) {
+    return (
+        <div className="stats">
+            <span className="pill">Total <strong>{total}</strong></span>
+            <span className="pill">Done <strong>{done}</strong></span>
+            <span className="pill">Progress <strong>{progress}%</strong></span>
+        </div>
+    );
 }

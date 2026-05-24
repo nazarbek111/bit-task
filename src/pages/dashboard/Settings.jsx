@@ -1,73 +1,67 @@
-import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { useLocalStorage } from "../../hooks/useLocalStorage";
+import { useTheme } from "../../context/ThemeContext";
 
 const defaultSettings = {
     notifications: true,
-    autoSave: true,
-    language: 'en',
+    confettiOnComplete: true,
+    compactView: false,
 };
 
 export default function Settings() {
-    const [settings, setSettings] = useLocalStorage('bittask.settings', defaultSettings);
+    const [settings, setSettings] = useLocalStorage("bittask.settings", defaultSettings);
+    const { theme, toggleTheme } = useTheme();
 
-    const handleToggle = (key) => {
-        setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
-    };
+    const toggle = (key) => setSettings({ ...settings, [key]: !settings[key] });
+
+    const Row = ({ label, value, onChange, hint }) => (
+        <div style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "14px 0", borderBottom: "1px solid var(--border)",
+        }}>
+            <div>
+                <div style={{ fontWeight: 500 }}>{label}</div>
+                {hint && <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{hint}</div>}
+            </div>
+            <button
+                className={`viewToggleBtn ${value ? "viewToggleBtn--active" : ""}`}
+                onClick={onChange}
+                style={{ minWidth: 60 }}
+            >
+                {value ? "ON" : "OFF"}
+            </button>
+        </div>
+    );
 
     return (
-        <div className="dashboardSection">
-            <h2>Settings</h2>
-            <p className="muted" style={{ marginTop: 0 }}>
-                Your preferences are saved automatically to local storage.
-            </p>
-            <div className="settingsList">
-                <div className="settingItem">
-                    <div className="settingInfo">
-                        <h4>Email Notifications</h4>
-                        <p>Receive email updates about your tasks</p>
-                    </div>
-                    <label className="toggle">
-                        <input
-                            type="checkbox"
-                            checked={settings.notifications}
-                            onChange={() => handleToggle('notifications')}
-                        />
-                        <span className="toggleSlider"></span>
-                    </label>
-                </div>
+        <div>
+            <h2 style={{ marginBottom: 6 }}>Settings</h2>
+            <p className="muted" style={{ marginBottom: 16 }}>Personalize your BitTask experience.</p>
 
-                <div className="settingItem">
-                    <div className="settingInfo">
-                        <h4>Auto Save</h4>
-                        <p>Settings are automatically saved to local storage</p>
-                    </div>
-                    <label className="toggle">
-                        <input
-                            type="checkbox"
-                            checked={settings.autoSave}
-                            onChange={() => handleToggle('autoSave')}
-                        />
-                        <span className="toggleSlider"></span>
-                    </label>
-                </div>
-
-                <div className="settingItem">
-                    <div className="settingInfo">
-                        <h4>Language</h4>
-                        <p>Select your preferred language</p>
-                    </div>
-                    <select
-                        value={settings.language}
-                        onChange={(e) =>
-                            setSettings((prev) => ({ ...prev, language: e.target.value }))
-                        }
-                        className="languageSelect"
-                    >
-                        <option value="en">English</option>
-                        <option value="es">Spanish</option>
-                        <option value="fr">French</option>
-                        <option value="de">German</option>
-                    </select>
-                </div>
+            <div className="card">
+                <Row
+                    label="Dark mode"
+                    hint="Theme is saved across sessions"
+                    value={theme === "dark"}
+                    onChange={toggleTheme}
+                />
+                <Row
+                    label="Toast notifications"
+                    hint="Show feedback messages after actions"
+                    value={settings.notifications}
+                    onChange={() => toggle("notifications")}
+                />
+                <Row
+                    label="Confetti on full completion"
+                    hint="Celebrate when all tasks are done 🎉"
+                    value={settings.confettiOnComplete}
+                    onChange={() => toggle("confettiOnComplete")}
+                />
+                <Row
+                    label="Compact view"
+                    hint="Reduce paddings in lists"
+                    value={settings.compactView}
+                    onChange={() => toggle("compactView")}
+                />
             </div>
         </div>
     );

@@ -1,22 +1,21 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useRef } from "react";
 
 const ToastContext = createContext(null);
 
-let id = 0;
-
 export function ToastProvider({ children }) {
     const [toasts, setToasts] = useState([]);
+    const idRef = useRef(0);
 
     const add = useCallback((message, type = "success") => {
-        const key = ++id;
-        setToasts((prev) => [...prev, { id: key, message, type }]);
+        const id = ++idRef.current;
+        setToasts((prev) => [...prev, { id, message, type }]);
         setTimeout(() => {
-            setToasts((prev) => prev.filter((t) => t.id !== key));
+            setToasts((prev) => prev.filter((t) => t.id !== id));
         }, 3000);
     }, []);
 
-    const remove = useCallback((key) => {
-        setToasts((prev) => prev.filter((t) => t.id !== key));
+    const remove = useCallback((id) => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
     }, []);
 
     return (
@@ -31,8 +30,8 @@ export function ToastProvider({ children }) {
                     >
                         <span className="toastIcon">
                             {t.type === "success" && "✓"}
-                            {t.type === "error"   && "✕"}
-                            {t.type === "info"    && "·"}
+                            {t.type === "error" && "✕"}
+                            {t.type === "info" && "·"}
                         </span>
                         {t.message}
                     </div>

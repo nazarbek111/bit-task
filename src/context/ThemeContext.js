@@ -1,26 +1,23 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useCallback, useMemo } from "react";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 
 const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
-    const [theme, setTheme] = useState(() => {
-        return localStorage.getItem("bittask.theme") || "light";
-    });
+    const [theme, setTheme] = useLocalStorage("bittask.theme", "light");
 
+    // Side effect: reflect the chosen theme on <html> so CSS variables update.
     useEffect(() => {
-        localStorage.setItem("bittask.theme", theme);
         document.documentElement.setAttribute("data-theme", theme);
     }, [theme]);
 
-    const toggleTheme = () => {
+    const toggleTheme = useCallback(() => {
         setTheme((prev) => (prev === "light" ? "dark" : "light"));
-    };
+    }, [setTheme]);
 
-    return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
-            {children}
-        </ThemeContext.Provider>
-    );
+    const value = useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme]);
+
+    return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {

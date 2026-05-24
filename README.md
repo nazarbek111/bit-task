@@ -1,121 +1,192 @@
-BitTask
+# BitTask
 
-Project Overview
+A fast, keyboard-first task manager built with **React 19**, **React Router 7**, and a custom design system.
 
-BitTask is a React-based task manager made as my semester project for Front-End Development. The idea of the project is to create a simple and useful workspace where a user can add tasks, track progress, filter tasks, search by title, and manage daily work more comfortably.
+> Final semester project for *Frontend Development & React · Bachelor Level*.
+> Inspired by Linear, Raycast, and Vercel dashboard.
 
-I decided to continue the same project from previous assignments and improve it step by step instead of creating something new every time. Because of that, BitTask now includes reusable React components, state management, event handling, form validation, dynamic rendering, and local storage support.
+![BitTask preview](screenshots/screenshot.png)
 
-⸻
+---
 
-Main Features
-	•	Add a new task
-	•	Delete a task
-	•	Change task status (done / in progress)
-	•	Search tasks by title
-	•	Filter tasks by status
-	•	Sort tasks
-	•	Show task statistics
-	•	Save tasks in localStorage
-	•	Responsive and clean UI
+## ✨ Highlights
 
-⸻
+- **⌘K Command Palette** — search, navigate, and run actions without touching the mouse.
+- **Drag-and-drop Kanban** — three columns (To Do / In Progress / Done) using native HTML5 DnD, no external library.
+- **Smart input** — write `design landing tomorrow !high #web @nazarbek` and BitTask extracts priority, tag, assignee, and due date for you.
+- **List view ↔ Board view** with persistent preference.
+- **Productivity dashboard** with weekly bar chart and priority breakdown — drawn in inline SVG.
+- **Light & Dark themes** with smooth transitions, persisted in `localStorage`.
+- **Protected routes** with redirect-back to the originally requested page.
+- **Real REST API** integration with loading / error / empty states everywhere.
 
-Technologies Used
-	•	React
-	•	JavaScript
-	•	JSX
-	•	CSS
-	•	localStorage
+---
 
-⸻
+## 🛠️ Tech stack
 
-Project Structure
+| Layer | Choice | Why |
+|---|---|---|
+| Framework | React 19 | Modern hooks, concurrent rendering |
+| Routing | React Router 7 | Nested layouts, dynamic params, protected routes |
+| State management | **Context API** (Auth, Theme, Toast) | App is small — Redux would be overhead. Auth and theme are global, everything else is local. |
+| Data fetching | Custom `useFetch` hook + service layer | Cancellable, single source of error/loading state |
+| Persistence | `useLocalStorage` hook | Encapsulated, type-safe, used by Auth/Theme/Settings |
+| Styling | Plain CSS variables + design tokens | Full theme switch via one attribute on `<html>` |
+| Drag & drop | Native HTML5 DnD API | Zero dependencies, easy to explain |
+| Charts | Inline SVG | No chart library required |
 
-The project is divided into reusable components to keep the code clean and easier to manage.
+---
 
-Main components:
-	•	Header
-	•	Footer
-	•	TaskForm
-	•	SearchBar
-	•	TaskFilters
-	•	TaskStats
-	•	TaskList
-	•	TaskItem
+## 📁 Project structure
 
-Main page:
-	•	Home.jsx
+```
+src/
+├── App.js                         ← routing + global providers + ⌘K hotkey
+├── index.js                       ← React root
+├── styles.css                     ← design system (CSS variables, dark theme)
+│
+├── components/
+│   ├── Navbar.jsx                 ← top nav with active-link styling + ⌘K button
+│   ├── CommandPalette.jsx         ← ⌘K modal with keyboard navigation
+│   ├── KanbanBoard.jsx            ← drag-and-drop board
+│   ├── TaskList.jsx               ← list view container
+│   ├── TaskItem.jsx               ← list card (memoised)
+│   ├── TaskForm.jsx               ← smart input form
+│   ├── TaskFilters.jsx            ← chips + sort dropdown
+│   ├── TaskStats.jsx              ← pill stats
+│   ├── SearchBar.jsx              ← live search input
+│   ├── ViewToggle.jsx             ← List ↔ Board switch
+│   ├── ProtectedRoute.jsx         ← auth gate with redirect-back
+│   ├── Header.jsx / Footer.jsx
+│
+├── pages/
+│   ├── Home.jsx                   ← landing (logged-out) + workspace (logged-in)
+│   ├── About.jsx
+│   ├── TaskDetail.jsx             ← dynamic route /tasks/:id
+│   ├── NotFound.jsx               ← 404
+│   ├── auth/Login.jsx
+│   └── dashboard/
+│       ├── Overview.jsx           ← stat cards + progress bar
+│       ├── Activity.jsx           ← SVG bar chart + priority chart
+│       ├── Profile.jsx
+│       └── Settings.jsx           ← uses useLocalStorage
+│
+├── context/
+│   ├── AuthContext.js             ← user, login, logout
+│   └── ThemeContext.js            ← theme + toggle
+│
+├── hooks/
+│   ├── useFetch.js                ← data fetcher with cleanup + refetch
+│   ├── useLocalStorage.js         ← persistent state
+│   ├── useToast.js                ← Context-based toast system
+│   └── useKeyboardShortcut.js     ← global keyboard listener
+│
+├── services/
+│   └── taskService.js             ← REST abstraction (GET/POST/PUT/DELETE)
+│
+└── utils/
+    ├── smartParser.js             ← natural-language input parser
+    └── dateUtils.js               ← date formatting helpers
+```
 
-⸻
+---
 
-JavaScript Concepts Used
+## 🚀 Setup
 
-This project demonstrates the main JavaScript and React topics covered in class:
-	•	variables and data types
-	•	arrays and objects
-	•	conditional logic
-	•	functions and arrow functions
-	•	map()
-	•	filter()
-	•	reduce()
-	•	destructuring
-	•	spread operator
-	•	callbacks
-	•	import/export
-	•	React state with useState
-	•	React optimization with useMemo
-	•	side effects with useEffect
+### 1. Clone & install
 
-⸻
+```bash
+git clone https://github.com/nazarbek111/bit-task.git
+cd bit-task
+npm install
+```
 
-Form Handling
+### 2. Configure the API
 
-The application contains a working task form with controlled inputs.
+BitTask talks to a JSON REST endpoint. The easiest option is [MockAPI](https://mockapi.io/):
 
-Form fields:
-	•	task title
-	•	priority
-	•	assignee
+1. Create a resource called **`tasks`** with these fields:
+   `title (string)`, `priority (string)`, `assignee (string)`, `completed (boolean)`,
+   `status (string)`, `tags (array)`, `dueDate (date)`, `createdAt (date)`, `userId (string)`
+2. Copy your endpoint URL.
+3. Create `.env` in the project root:
 
-Validation:
-	•	empty fields cannot be submitted
+```bash
+cp .env.example .env
+```
 
-⸻
+```env
+REACT_APP_API_URL=https://your-id.mockapi.io/api/v1
+```
 
-Dynamic Rendering
+> Alternative: run [`json-server`](https://github.com/typicode/json-server) locally on `http://localhost:3001`.
 
-The task list is rendered dynamically using map().
-The app also uses:
-	•	filtering by task status
-	•	searching by keyword
-	•	conditional rendering for empty results
-	•	dynamic statistics based on current task data
+### 3. Run
 
-⸻
+```bash
+npm start          # dev server at http://localhost:3000
+npm run build      # production build
+npm test           # tests
+```
 
-State and Events
+---
 
-The app uses React state and event handling to make the interface interactive.
+## 🎹 Keyboard shortcuts
 
-Examples:
-	•	onSubmit — adding a new task
-	•	onChange — updating search and form values
-	•	onClick — toggling task status, deleting tasks, changing filters
+| Key | Action |
+|---|---|
+| `⌘K` / `Ctrl+K` | Open command palette |
+| `↑` / `↓` | Navigate palette |
+| `Enter` | Run selected command |
+| `Esc` | Close palette |
 
-⸻
+---
 
-Data Persistence
+## 🧠 Smart input syntax
 
-Tasks are stored in localStorage, so after refreshing the page the saved data is still available.
+Type in the task title field — BitTask parses it live:
 
------
-Why I Made This Project
+| Symbol | Meaning | Example |
+|---|---|---|
+| `!high` `!normal` `!low` | Priority | `fix bug !high` |
+| `#tag` | Add a tag | `study #math #exam` |
+| `@name` | Assign to someone | `review pr @alice` |
+| `today` / `tomorrow` | Due date | `call mom tomorrow` |
+| `monday` … `sunday` | Next weekday | `meeting friday` |
+| `12.05` / `12/05` | Specific date | `pay bill 25.12` |
 
-I chose a task manager because it is practical and easy to expand step by step. It also fits well with React because I can clearly demonstrate components, props, state, events, forms, and dynamic rendering in one project.
+Example: `design landing tomorrow !high #web @nazarbek`
 
-⸻
+---
 
-Current Result
+## 🧪 Routes
 
-At this stage, BitTask is already a working React SPA with task management features and a clear component structure. Compared to the first assignments, the project now has much more logic, interactivity, and better usability.
+| Path | Description |
+|---|---|
+| `/` | Landing (logged-out) or Workspace (logged-in) |
+| `/about` | About page |
+| `/login` | Sign in |
+| `/tasks/:id` | Dynamic task detail |
+| `/dashboard` | Protected — redirects to `/login` if needed |
+| `/dashboard/overview` | (index) Key metrics |
+| `/dashboard/activity` | Weekly chart + priority chart |
+| `/dashboard/profile` | User profile |
+| `/dashboard/settings` | App preferences |
+| `*` | Custom 404 |
+
+---
+
+## 🧬 Architecture notes
+
+- **No prop drilling** — global concerns live in Context (`AuthContext`, `ThemeContext`, `ToastProvider`).
+- **Service layer** keeps every `fetch` call out of components.
+- **`useFetch` cleanup** — a `cancelled` flag prevents stale responses from overwriting newer data when dependencies change.
+- **`React.memo`** on `TaskItem` avoids re-rendering hundreds of list rows when only one toggles.
+- **`useMemo` / `useCallback`** in `Home.jsx` stabilize handlers passed to memoised children.
+- **`useLocalStorage`** is the single point that touches `localStorage`, keeping persistence logic encapsulated.
+
+---
+
+## 📸 Screenshots
+
+See the `/screenshots` folder for previews of the dashboard, kanban, command palette, and dark mode.

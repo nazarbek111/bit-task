@@ -1,133 +1,71 @@
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 import { useFetch } from "../../hooks/useFetch";
 import { taskService } from "../../services/taskService";
+import { useAuth } from "../../context/AuthContext";
 
+/**
+ * Dashboard Overview — key metrics + breakdown.
+ */
 export default function Overview() {
     const { user } = useAuth();
-    const navigate = useNavigate();
-
-    const { data: tasks, loading, error } = useFetch(
+    const { data: tasks, loading } = useFetch(
         () => taskService.getByUser(user?.username),
         [user?.username]
     );
 
     const stats = useMemo(() => {
-        const all = tasks || [];
-        const done = all.filter((t) => t.completed).length;
-        const active = all.length - done;
-        const rate = all.length === 0 ? 0 : Math.round((done / all.length) * 100);
-        const high = all.filter((t) => t.priority === "High" && !t.completed).length;
-        return { total: all.length, done, active, rate, high };
+        const list = tasks || [];
+        const done   = list.filter((t) => t.completed).length;
+        const active = list.length - done;
+        const high   = list.filter((t) => t.priority === "High" && !t.completed).length;
+        const overdue = list.filter((t) => {
+            if (!t.dueDate || t.completed) return false;
+            return new Date(t.dueDate) < new Date();
+        }).length;
+        const progress = list.length ? Math.round((done / list.length) * 100) : 0;
+        return { total: list.length, done, active, high, overdue, progress };
     }, [tasks]);
 
+    if (loading) return <p className="muted">Loading overview…</p>;
+
     return (
-        <div className="dashboardSection">
-            <h2>Dashboard Overview</h2>
-            <p>
-                Welcome back, <strong>{user?.username}</strong>! Here's a live summary of your tasks.
-            </p>
+        <div>
+            <h2 style={{ marginBottom: 6 }}>Overview</h2>
+            <p className="muted" style={{ marginBottom: 24 }}>A snapshot of your workspace.</p>
 
-            {loading && <p className="muted" style={{ marginTop: 16 }}>Loading stats...</p>}
-
-            {error && (
-                <p style={{ color: "var(--danger)", marginTop: 16, fontSize: 13 }}>
-                    ⚠️ Could not load tasks: {error}
-                </p>
-            )}
-
-            {!loading && !error && (
-                <>
-                    <div className="overviewGrid">
-                        <div className="overviewCard">
-                            <h3>Total Tasks</h3>
-                            <p className="overviewNumber">{stats.total}</p>
-                        </div>
-                        <div className="overviewCard">
-                            <h3>Completed</h3>
-                            <p className="overviewNumber" style={{ color: "var(--green)" }}>
-                                {stats.done}
-                            </p>
-                        </div>
-                        <div className="overviewCard">
-                            <h3>Active</h3>
-                            <p className="overviewNumber" style={{ color: "var(--amber)" }}>
-                                {stats.active}
-                            </p>
-                        </div>
-                        <div className="overviewCard">
-                            <h3>Completion Rate</h3>
-                            <p className="overviewNumber">{stats.rate}%</p>
-                        </div>
-                        {stats.high > 0 && (
-                            <div className="overviewCard">
-                                <h3>High Priority</h3>
-                                <p className="overviewNumber" style={{ color: "var(--red)" }}>
-                                    {stats.high}
-                                </p>
-                            </div>
-                        )}
-                    </div>
-
-                    {stats.total === 0 ? (
-                        <div className="emptyState" style={{ marginTop: 8 }}>
-                            You have no tasks yet. Go to Home to add your first task!
-                        </div>
-                    ) : (
-                        <div className="progressSection" style={{ marginBottom: 24 }}>
-                            <div style={{
-                                display: "flex", justifyContent: "space-between",
-                                fontSize: 12, color: "var(--text-2)", marginBottom: 6
-                            }}>
-                                <span>Overall progress</span>
-                                <span>{stats.rate}%</span>
-                            </div>
-                            <div style={{
-                                height: 6, background: "var(--surface-3)",
-                                borderRadius: 999, overflow: "hidden"
-                            }}>
-                                <div style={{
-                                    width: `${stats.rate}%`,
-                                    height: "100%",
-                                    background: stats.rate === 100
-                                        ? "var(--green)"
-                                        : "var(--accent)",
-                                    borderRadius: 999,
-                                    transition: "width 0.6s ease"
-                                }} />
-                            </div>
-                        </div>
-                    )}
-                </>
-            )}
-
-            <div className="quickActions">
-                <h3>Quick Actions</h3>
-                <div className="actionButtons">
-                    <button className="actionBtn" onClick={() => navigate("/")}>
-                        Add New Task
-                    </button>
-                    <button className="actionBtn" onClick={() => navigate("/dashboard/activity")}>
-                        View Activity
-                    </button>
-                    <button
-                        className="actionBtn"
-                        onClick={() => {
-                            const data = JSON.stringify(tasks || [], null, 2);
-                            const blob = new Blob([data], { type: "application/json" });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement("a");
-                            a.href = url;
-                            a.download = `${user?.username}-tasks.json`;
-                            a.click();
-                            URL.revokeObjectURL(url);
-                        }}
-                    >
-                        Export JSON
-                    </button>
+            <div className="statCards">
+                <div className="statCard">
+                    <div className="statCardLabel">Total tasks</div>
+                    <div className="statCardValue">{stats.total}</div>
+                </div>
+                <div className="statCard">
+                    <div className="statCardLabel">Completed</div>
+                    <div className="statCardValue statCardValue--brand">{stats.done}</div>
+                    <div className="statCardSub">{stats.progress}% of all tasks</div>
+                </div>
+                <div className="statCard">
+                    <div className="statCardLabel">Active</div>
+                    <div className="statCardValue">{stats.active}</div>
+                </div>
+                <div className="statCard">
+                    <div className="statCardLabel">High priority</div>
+                    <div className="statCardValue" style={{ color: "var(--p-high)" }}>{stats.high}</div>
+                </div>
+                <div className="statCard">
+                    <div className="statCardLabel">Overdue</div>
+                    <div className="statCardValue" style={{ color: "var(--warning)" }}>{stats.overdue}</div>
                 </div>
             </div>
+
+            <h3>Completion progress</h3>
+            <div className="progressBar">
+                <div className="progressFill" style={{ width: `${stats.progress}%` }} />
+            </div>
+            <p className="muted" style={{ marginTop: 8, fontSize: 13 }}>
+                {stats.progress === 100
+                    ? "🎉 You've cleared the board!"
+                    : `${100 - stats.progress}% to go — keep going.`}
+            </p>
         </div>
     );
 }

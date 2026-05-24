@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 export function useFetch(fetchFn, deps = []) {
     const [data, setData] = useState(null);
@@ -27,9 +27,10 @@ export function useFetch(fetchFn, deps = []) {
         return () => {
             cancelled = true;
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [trigger, ...deps]);
 
-    const refetch = () => setTrigger((n) => n + 1);
+    const refetch = useCallback(() => setTrigger((n) => n + 1), []);
 
     return { data, loading, error, refetch };
 }

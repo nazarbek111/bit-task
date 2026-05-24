@@ -1,30 +1,24 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useCallback, useMemo } from "react";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(() => {
-        const saved = localStorage.getItem("bittask.user");
-        return saved ? JSON.parse(saved) : null;
-    });
-    const login = (username, password) => {
+    // Persistence is now delegated to a single custom hook (no inline localStorage).
+    const [user, setUser] = useLocalStorage("bittask.user", null);
+
+    const login = useCallback((username, password) => {
         if (!username || !password) return false;
-        const userData = { username, loggedInAt: new Date().toISOString() };
-        localStorage.setItem("bittask.user", JSON.stringify(userData));
-        setUser(userData);
+        setUser({ username, loggedInAt: new Date().toISOString() });
         return true;
-    };
+    }, [setUser]);
 
-    const logout = () => {
-        localStorage.removeItem("bittask.user");
-        setUser(null);
-    };
+    const logout = useCallback(() => setUser(null), [setUser]);
 
-    return (
-        <AuthContext.Provider value={{ user, login, logout }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    // Memoise so children don't re-render on unrelated parent updates.
+    const value = useMemo(() => ({ user, login, logout }), [user, login, logout]);
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
