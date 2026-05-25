@@ -1,129 +1,120 @@
-function groupByDay(tasks, dateField = "createdAt") {
-    const map = new Map();
-    for (const t of tasks) {
-        if (!t[dateField]) continue;
-        const d = new Date(t[dateField]);
-        const key = d.toISOString().slice(0, 10);
-        map.set(key, (map.get(key) || 0) + 1);
-    }
-    return map;
-}
+const toDate = (value) => {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+};
 
-export function buildHeatmap(tasks, weeks = 12) {
-    const counts = groupByDay(tasks, "createdAt");
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+const toDayKey = (value) => {
+    const date = toDate(value);
+    if (!date) return null;
 
-    // Align right edge to the upcoming Sunday so weeks look natural.
-    const endOfWeek = new Date(today);
-    const daysUntilSun = (7 - today.getDay()) % 7;
-    endOfWeek.setDate(today.getDate() + daysUntilSun);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
 
-    const totalDays = weeks * 7;
-    const startDate = new Date(endOfWeek);
-    startDate.setDate(endOfWeek.getDate() - totalDays + 1);
+    return `${year}-${month}-${day}`;
+};
 
-    const cells = [];
-    for (let i = 0; i < totalDays; i++) {
-        const d = new Date(startDate);
-        d.setDate(startDate.getDate() + i);
-        const key = d.toISOString().slice(0, 10);
-        cells.push({
-            date: d,
-            key,
+const startOfLocalDay = (value = new Date()) => {
+    const date = toDate(value) || new Date();
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+};
+
+export function buildHeatmap(tasks = [], weeks = 12) {
+    const today = startOfLocalDay();
+    const days = weeks * 7;
+    const start = new Date(today);
+    start.setDate(today.getDate() - days + 1);
+
+    const counts = new Map();
+
+    tasks.forEach((task) => {
+        const key = toDayKey(task.createdAt);
+        if (!key) return;
+        counts.set(key, (counts.get(key) || 0) + 1);
+    });
+
+    const cells = Array.from({ length: days }, (_, index) => {
+        const date = new Date(start);
+        date.setDate(start.getDate() + index);
+
+        const key = toDayKey(date);
+
+        return {
+            date: key,
             count: counts.get(key) || 0,
-            isFuture: d > today,
-        });
-    }
+        };
+    });
 
-    // Slice into weeks (columns of 7).
-    const grid = [];
-    for (let w = 0; w < weeks; w++) {
-        grid.push(cells.slice(w * 7, w * 7 + 7));
-    }
-    return grid;
+    return Array.from({ length: weeks }, (_, weekIndex) =>
+        cells.slice(weekIndex * 7, weekIndex * 7 + 7)
+    );
 }
 
-export function calcStreak(tasks) {
-    const counts = groupByDay(tasks, "createdAt");
-    let streak = 0;
-    const cursor = new Date();
-    cursor.setHours(0, 0, 0, 0);
+export function calcStreak(tasks = []) {
+    if (!tasks.length) return 0;
 
-    // Walk backwards until we hit a day with zero activity.
-    for (let i = 0; i < 365; i++) {
-        const key = cursor.toISOString().slice(0, 10);
-        if (counts.get(key)) {
-            streak += 1;
-        } else if (i > 0) {
-            // First day (today) without activity doesn't reset; allows current day to be slow.
-            break;
-        }
+    const taskDays = new Set(
+        tasks
+            .map((task) => toDayKey(task.createdAt))
+            .filter(Boolean)
+    );
+
+    let streak = 0;
+    const cursor = startOfLocalDay();
+
+    while (taskDays.has(toDayKey(cursor))) {
+        streak += 1;
         cursor.setDate(cursor.getDate() - 1);
     }
+
     return streak;
 }
 
-export function bestWeekday(tasks) {
-    const buckets = [0, 0, 0, 0, 0, 0, 0];
-    for (const t of tasks) {
-        if (!t.createdAt) continue;
-        buckets[new Date(t.createdAt).getDay()] += 1;
-    }
-    const max = Math.max(...buckets);
-    if (max === 0) return null;
-    const idx = buckets.indexOf(max);
-    const names = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    return { name: names[idx], count: max };
+export function bestWeekday(tasks = []) {
+    if (!tasks.length) return null;
+
+    const labels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const counts = new Array(7).fill(0);
+
+    tasks.forEach((task) => {
+        const date = toDate(task.createdAt);
+        if (!date) return;
+        counts[date.getDay()] += 1;
+    });
+
+    const bestIndex = counts.indexOf(Math.max(...counts));
+    if (counts[bestIndex] === 0) return null;
+
+    return {
+        name: labels[bestIndex],
+        count: counts[bestIndex],
+    };
 }
 
-export function productivityScore(tasks) {
-    if (tasks.length === 0) return 0;
+export function productivityScore(tasks = []) {
+    if (!tasks.length) return 0;
 
-    const done = tasks.filter((t) => t.completed).length;
-    const completion = (done / tasks.length) * 100;
+    const completed = tasks.filter((task) => task.completed).length;
+    const completionRate = completed / tasks.length;
 
-    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const recent = tasks.filter((t) => t.createdAt && new Date(t.createdAt).getTime() >= sevenDaysAgo).length;
-    const activityBonus = Math.min(recent * 4, 25);
+    const streakBonus = Math.min(calcStreak(tasks) * 5, 25);
+    const volumeBonus = Math.min(tasks.length * 2, 25);
 
-    const streakBonus = Math.min(calcStreak(tasks) * 3, 15);
-
-    return Math.min(100, Math.round(completion * 0.6 + activityBonus + streakBonus));
+    return Math.min(100, Math.round(completionRate * 50 + streakBonus + volumeBonus));
 }
 
-export function recentActivity(tasks, limit = 6) {
-    const events = [];
-    for (const t of tasks) {
-        if (t.createdAt) {
-            events.push({ id: `c-${t.id}`, type: "created", at: t.createdAt, task: t });
-        }
-        if (t.completed && t.completedAt) {
-            events.push({ id: `d-${t.id}`, type: "completed", at: t.completedAt, task: t });
-        }
-    }
-    return events
-        .sort((a, b) => new Date(b.at) - new Date(a.at))
-        .slice(0, limit);
-}
-
-export function topTags(tasks, limit = 8) {
+export function topTags(tasks = [], limit = 5) {
     const counts = new Map();
-    for (const t of tasks) {
-        for (const tag of t.tags || []) {
+
+    tasks.forEach((task) => {
+        const tags = Array.isArray(task.tags) ? task.tags : [];
+        tags.forEach((tag) => {
             counts.set(tag, (counts.get(tag) || 0) + 1);
-        }
-    }
-    return [...counts.entries()]
+        });
+    });
+
+    return Array.from(counts.entries())
         .map(([name, count]) => ({ name, count }))
         .sort((a, b) => b.count - a.count)
         .slice(0, limit);
-}
-
-export function dueSoon(tasks) {
-    const now = Date.now();
-    const weekFromNow = now + 7 * 24 * 60 * 60 * 1000;
-    return tasks
-        .filter((t) => !t.completed && t.dueDate && new Date(t.dueDate).getTime() <= weekFromNow)
-        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 }
