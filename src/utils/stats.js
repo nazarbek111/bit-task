@@ -118,3 +118,31 @@ export function topTags(tasks = [], limit = 5) {
         .sort((a, b) => b.count - a.count)
         .slice(0, limit);
 }
+export function recentActivity(tasks = [], limit = 5) {
+    return [...tasks]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, limit)
+        .map((task) => ({
+            type: task.completed ? "completed" : "created",
+            task,
+            createdAt: task.createdAt,
+        }));
+}
+
+export function dueSoon(tasks = [], limit = 5) {
+    const now = new Date();
+    const weekFromNow = new Date();
+    weekFromNow.setDate(now.getDate() + 7);
+
+    return tasks
+        .filter((task) => {
+            if (!task.dueDate) return false;
+
+            const dueDate = new Date(task.dueDate);
+            if (Number.isNaN(dueDate.getTime())) return false;
+
+            return dueDate >= now && dueDate <= weekFromNow;
+        })
+        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+        .slice(0, limit);
+}
